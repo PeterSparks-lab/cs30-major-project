@@ -10,7 +10,7 @@ let grid;
 
 function preload() {
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
-  grid = loadStrings("assets/rooms/castle-room-locked.txt");
+  grid = loadStrings("assets/rooms/room2.txt");
 }
 
 function setup() {
@@ -22,6 +22,7 @@ function draw() {
   background(castleLocked);
   character.display();
   character.inputHandler();
+  console.log(grid[character.y/10][character.x-1]);
 }
 
 
@@ -31,7 +32,7 @@ class Player {
     this.y = y;
     this.size = 10;
     this.speed = 10;
-    this.pos = Math.floor(this.x/10);
+    this.pos = this.x/10;
   }
 
   display() {
