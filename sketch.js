@@ -6,9 +6,11 @@
 // - describe what you did to take this project "above and beyond"
 let character;
 let castleLocked;
+let grid;
 
 function preload() {
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
+  grid = loadStrings("assets/rooms/castle-room-locked.txt");
 }
 
 function setup() {
@@ -27,14 +29,14 @@ class Player {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 15;
-    this.speed = 5;
+    this.size = 10;
+    this.speed = 10;
   }
 
   display() {
     noStroke();
     fill("red");
-    rectMode(CENTER);
+    //rectMode(CENTER);
     rect(this.x, this.y, this.size, this.size);
   }
 
@@ -48,7 +50,10 @@ class Player {
       console.log("Y="+this.y);
     }
     if (keyIsDown(65)) {
-      this.x -= this.speed;
+      if (grid[this.y][this.x/10-1] === ".") {
+
+        this.x -= this.speed;
+      }
       console.log("X="+this.x);
     }
     if (keyIsDown(68)) {
