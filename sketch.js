@@ -5,6 +5,11 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 let character;
+let castleLocked;
+
+function preload() {
+  castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
+}
 
 function setup() {
   createCanvas(960, 540);
@@ -12,7 +17,7 @@ function setup() {
 }
 
 function draw() {
-  background(220);
+  background(castleLocked);
   character.display();
   character.inputHandler();
 }
