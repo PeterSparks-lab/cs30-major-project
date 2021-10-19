@@ -4,29 +4,19 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
-let man;
+let character;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  man = new Player(width/2,height/2);
+  character = new Player(width/2,height/2);
 }
 
 function draw() {
   background(220);
-  man.display();
-  // for (let i=0; i<10; i++) {
-  //   rect(50*i,10*i,50,100);
-  // }
+  character.display();
+  character.inputHandler();
 }
 
-function keyTyped() {
-  if (key === "w") {
-    man.y -= man.speed;
-  }
-  else if (key === "s") {
-    man.y += man.speed;
-  }
-}
 
 class Player {
   constructor(x, y) {
@@ -40,5 +30,26 @@ class Player {
     fill("red");
     rectMode(CENTER);
     rect(this.x, this.y, this.size, this.size);
+  }
+
+  inputHandler() {
+    if (keyIsDown(87)) {
+      character.y -= character.speed;
+    }
+    if (keyIsDown(83)) {
+      character.y += character.speed;
+    }
+    if (keyIsDown(65)) {
+      character.x -= character.speed;
+    }
+    if (keyIsDown(68)) {
+      character.x += character.speed;
+    }
+  }
+}
+
+class Enemy {
+  constructor(x,y) {
+    
   }
 }
