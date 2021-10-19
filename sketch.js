@@ -31,6 +31,7 @@ class Player {
     this.y = y;
     this.size = 10;
     this.speed = 10;
+    this.pos = Math.floor(this.x/10);
   }
 
   display() {
@@ -50,7 +51,7 @@ class Player {
       console.log("Y="+this.y);
     }
     if (keyIsDown(65)) {
-      if (grid[this.y][this.x/10-1] === ".") {
+      if (grid[this.y][this.pos-1] === ".") {
 
         this.x -= this.speed;
       }
