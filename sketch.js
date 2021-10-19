@@ -32,6 +32,7 @@ class Player {
   }
 
   display() {
+    noStroke();
     fill("red");
     rectMode(CENTER);
     rect(this.x, this.y, this.size, this.size);
@@ -39,16 +40,20 @@ class Player {
 
   inputHandler() {
     if (keyIsDown(87)) {
-      character.y -= character.speed;
+      this.y -= this.speed;
+      console.log("Y="+this.y);
     }
     if (keyIsDown(83)) {
-      character.y += character.speed;
+      this.y += this.speed;
+      console.log("Y="+this.y);
     }
     if (keyIsDown(65)) {
-      character.x -= character.speed;
+      this.x -= this.speed;
+      console.log("X="+this.x);
     }
     if (keyIsDown(68)) {
-      character.x += character.speed;
+      this.x += this.speed;
+      console.log("X="+this.x);
     }
   }
 }
