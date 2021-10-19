@@ -7,7 +7,7 @@
 let character;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(960, 540);
   character = new Player(width/2,height/2);
 }
 
