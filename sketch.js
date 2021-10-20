@@ -100,15 +100,25 @@ class Item {
   }
   
   display() {
-    imageMode(CENTER);
     image(this.image, this.x, this.y, this.sideX, this.sideY);
+    if (this.onGround) {
+      this.pickup();
+    }
+    else {
+      this.x = character.x+10;
+      this.y = character.y-5;
+    }
   }
 
   pickup() {
-  //   if (this.onGround) {
-  //     if (character.x + 1) {
-  //       let s = 1;
-  //     }
-  //   }
+    for(let i=character.y; i<character.y+10; i++) {
+      for(let j=character.x; j<character.x+10; j++) {
+        if (i >= this.y && i <this.y+this.sideY ) {
+          if (j >= this.x && j < this.x+this.sideX) {
+            this.onGround = false;
+          }
+        }
+      }
+    }
   }
 }
