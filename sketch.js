@@ -4,8 +4,14 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
+let castle;
+let currentRoom;
+let currentBackground;
 let character;
 let castleLocked;
+let hallway1;
+let hallwayRoom;
+let castleRoomLocked;
 let grid;
 let swordRight;
 let swordLeft;
@@ -13,7 +19,9 @@ let sword;
 
 function preload() {
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
-  grid = loadStrings("assets/rooms/castle-room-locked.txt");
+  hallway1 = loadImage("assets/backgrounds/hallway-1.png");
+  castleRoomLocked = loadStrings("assets/rooms/castle-room-locked.txt");
+  hallwayRoom = loadStrings("assets/rooms/hallway-1.txt");
   swordRight = loadImage("assets/items/sword/sword-right.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
   
@@ -21,14 +29,18 @@ function preload() {
 
 function setup() {
   createCanvas(960, 540);
+  grid = castleRoomLocked;
   character = new Player(width/2,height/2);
   sword = new Item(900,500,swordRight,swordLeft,20,20);
+  castle = castleLocked;
+  currentBackground = castle;
 }
 
 function draw() {
-  background(castleLocked);
+  background(currentBackground);
   character.display();
   character.position();
+  character.rooms();
   character.inputHandler();
   sword.display();
 
@@ -44,6 +56,7 @@ class Player {
     this.posX = this.x/10;
     this.posY = this.y/10;
     this.leftOrRight;
+    this.movingDown;
   }
 
   display() {
@@ -69,6 +82,7 @@ class Player {
       if (grid[this.posY+1][this.posX] === ".") {
         this.y += this.speed;
       }
+      this.movingDown = false;
       console.log("Y="+this.y);
     }
     if (keyIsDown(65)) {
@@ -84,6 +98,19 @@ class Player {
       }
       this.leftOrRight = "right";
       console.log("X="+this.x);
+    }
+  }
+
+  rooms() {
+    if (this.y === 540) {
+      this.y = 1;
+      grid = hallwayRoom;
+      currentBackground = hallway1;
+    }
+    if (this.y < 1) {
+      this.y = 540;
+      currentBackground = castle;
+      grid = castleRoomLocked;
     }
   }
 }
