@@ -7,20 +7,22 @@
 let character;
 let castleLocked;
 let grid;
-let theSword;
+let swordRight;
+let swordLeft;
 let sword;
 
 function preload() {
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
   grid = loadStrings("assets/rooms/castle-room-locked.txt");
-  theSword = loadImage("assets/items/sword.png");
+  swordRight = loadImage("assets/items/sword/sword-right.png");
+  swordLeft = loadImage("assets/items/sword/sword-left.png");
   
 }
 
 function setup() {
   createCanvas(960, 540);
   character = new Player(width/2,height/2);
-  sword = new Item(900,500,theSword,20,20);
+  sword = new Item(900,500,swordRight,swordLeft,20,20);
 }
 
 function draw() {
@@ -41,6 +43,7 @@ class Player {
     this.speed = 10;
     this.posX = this.x/10;
     this.posY = this.y/10;
+    this.leftOrRight;
   }
 
   display() {
@@ -72,12 +75,14 @@ class Player {
       if (grid[this.posY][this.posX-1] === ".") {
         this.x -= this.speed;
       }
+      this.leftOrRight = "left";
       console.log("X="+this.x);
     }
     if (keyIsDown(68)) {
       if (grid[this.posY][this.posX+1] === ".") {
         this.x += this.speed;
       }
+      this.leftOrRight = "right";
       console.log("X="+this.x);
     }
   }
@@ -90,22 +95,30 @@ class Enemy {
 }
 
 class Item {
-  constructor(x, y, image, sideX, sideY) {
+  constructor(x, y, image1, image2, sideX, sideY) {
     this.x = x;
     this.y = y;
-    this.image = image;
+    this.imageRight = image1;
+    this.imageLeft = image2;
     this.sideX = sideX;
     this.sideY = sideY;
     this.onGround = true;
   }
   
   display() {
-    image(this.image, this.x, this.y, this.sideX, this.sideY);
     if (this.onGround) {
+      image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
       this.pickup();
     }
     else {
-      this.x = character.x+10;
+      if (character.leftOrRight === "right") {
+        image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+        this.x = character.x+10;
+      }
+      else {
+        image(this.imageLeft, this.x, this.y, this.sideX, this.sideY);
+        this.x = character.x-20;
+      }
       this.y = character.y-5;
     }
   }
