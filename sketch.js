@@ -38,12 +38,11 @@ function setup() {
 
 function draw() {
   background(currentBackground);
+  character.rooms();
   character.display();
   character.position();
-  character.rooms();
   character.inputHandler();
   sword.display();
-
 }
 
 
@@ -56,7 +55,6 @@ class Player {
     this.posX = this.x/10;
     this.posY = this.y/10;
     this.leftOrRight;
-    this.movingDown;
   }
 
   display() {
@@ -82,7 +80,6 @@ class Player {
       if (grid[this.posY+1][this.posX] === ".") {
         this.y += this.speed;
       }
-      this.movingDown = false;
       console.log("Y="+this.y);
     }
     if (keyIsDown(65)) {
@@ -102,15 +99,15 @@ class Player {
   }
 
   rooms() {
-    if (this.y === 540) {
-      this.y = 1;
+    if (this.y === 530) {
+      this.y = 20;
       grid = hallwayRoom;
       currentBackground = hallway1;
     }
-    if (this.y < 1) {
-      this.y = 540;
-      currentBackground = castle;
+    if (this.y-5 < 1) {
+      this.y = 530;
       grid = castleRoomLocked;
+      currentBackground = castle;
     }
   }
 }
