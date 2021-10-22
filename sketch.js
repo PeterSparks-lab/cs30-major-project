@@ -8,6 +8,7 @@ let castle;
 let currentRoom;
 let currentBackground;
 let character;
+let enemy;
 let castleLocked;
 let hallway1;
 let hallwayRoom;
@@ -16,6 +17,8 @@ let grid;
 let swordRight;
 let swordLeft;
 let sword;
+let greenDragonRight;
+let greenDragonLeft;
 
 function preload() {
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
@@ -24,13 +27,17 @@ function preload() {
   hallwayRoom = loadStrings("assets/rooms/hallway-1.txt");
   swordRight = loadImage("assets/items/sword/sword-right.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
+  greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
+  greenDragonLeft = loadImage("assets/enemies/green-dragon-v2-left.png");
   
 }
 
 function setup() {
   createCanvas(960, 540);
+  angleMode(DEGREES);
   grid = castleRoomLocked;
   character = new Player(width/2,height/2);
+  enemy = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, hallwayRoom);
   sword = new Item(900,500,swordRight,swordLeft,20,20);
   castle = castleLocked;
   currentBackground = castle;
@@ -40,6 +47,8 @@ function draw() {
   background(currentBackground);
   character.rooms();
   character.display();
+  enemy.spawn();
+  enemy.display();
   character.position();
   character.inputHandler();
   sword.display();
@@ -113,8 +122,38 @@ class Player {
 }
 
 class Enemy {
-  constructor(x,y) {
+  constructor(x,y,image1,image2,speed,room) {
+    this.x = x;
+    this.y = y;
+    this.imageRight = image1;
+    this.imageLeft = image2;
+    this.speed = speed;
+    this.spawnRoom = room;
+    this.alive = false;
+  }
+
+  spawn() {
+    if (grid === this.spawnRoom) {
+      this.alive = true;
+    }
+    else {
+      this.alive = false;
+    }
     
+  }
+
+  display() {
+    if (this.alive) {
+      if (character.x >= this.x) {
+        image (this.imageRight, this.x, this.y, 64, 64);
+      }
+      else {
+        image (this.imageLeft, this.x, this.y, 64, 64);
+      }
+    }
+  }
+
+  move() {
   }
 }
 
