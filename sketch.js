@@ -19,6 +19,7 @@ let swordLeft;
 let sword;
 let greenDragonRight;
 let greenDragonLeft;
+let inventory;
 
 function preload() {
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
@@ -38,9 +39,10 @@ function setup() {
   grid = castleRoomLocked;
   character = new Player(width/2,height/2);
   enemy = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, hallwayRoom);
-  sword = new Item(900,500,swordRight,swordLeft,20,20);
+  sword = new Item("sword",900,500,swordRight,swordLeft,20,20);
   castle = castleLocked;
   currentBackground = castle;
+  inventory = new Map();
 }
 
 function draw() {
@@ -48,7 +50,9 @@ function draw() {
   character.rooms();
   character.display();
   enemy.spawn();
+  enemy.move();
   enemy.display();
+  enemy.killPlayer();
   character.position();
   character.inputHandler();
   sword.display();
@@ -119,6 +123,11 @@ class Player {
       currentBackground = castle;
     }
   }
+
+  death() {
+    console.log("you are dead");
+    this.alive = false;
+  }
 }
 
 class Enemy {
@@ -130,11 +139,17 @@ class Enemy {
     this.speed = speed;
     this.spawnRoom = room;
     this.alive = false;
+    this.hasBeenKilled = false;
   }
 
   spawn() {
-    if (grid === this.spawnRoom) {
-      this.alive = true;
+    if (!this.hasBeenKilled) {
+      if (grid === this.spawnRoom) {
+        this.alive = true;
+      }
+      else {
+        this.alive = false;
+      }
     }
     else {
       this.alive = false;
@@ -154,11 +169,39 @@ class Enemy {
   }
 
   move() {
+    if (this.alive) {
+      if (character.x + 10 > this.x + 64) {
+        this.x += this.speed;
+      }
+      if (character.y >= this.y + 10) {
+        this.y += this.speed;
+      }
+      if (character.x < this.x) {
+        this.x -= this.speed;
+      }
+      if (character.y < this.y) {
+        this.y -= this.speed;
+      }
+    }
+  }
+
+  killPlayer() {
+    if (this.alive) {
+      if (character.x+10 > this.x && character.x < this.x +64 && character.y > this.y && character.y < this.y + 64) {
+        if (inventory.get("holding") === "sword") {
+          this.hasBeenKilled = true;
+        }
+        else {
+          character.death();
+        }
+      }
+    }
   }
 }
 
 class Item {
-  constructor(x, y, image1, image2, sideX, sideY) {
+  constructor(id,x, y, image1, image2, sideX, sideY) {
+    this.id = id;
     this.x = x;
     this.y = y;
     this.imageRight = image1;
@@ -192,6 +235,7 @@ class Item {
         if (i >= this.y && i <this.y+this.sideY ) {
           if (j >= this.x && j < this.x+this.sideX) {
             this.onGround = false;
+            inventory.set("holding",this.id);
           }
         }
       }
