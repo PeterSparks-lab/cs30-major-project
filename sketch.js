@@ -11,7 +11,13 @@ let character;
 let enemy;
 let castleLocked;
 let hallway1;
-let hallwayRoom;
+let hallway2;
+let hallway3;
+let deadEnd1;
+let hallwayRoom1;
+let hallwayRoom2;
+let hallwayRoom3;
+let deadEndRoom1;
 let castleRoomLocked;
 let grid;
 let swordRight;
@@ -20,32 +26,56 @@ let sword;
 let greenDragonRight;
 let greenDragonLeft;
 let inventory;
+let worldRooms;
+let worldBackrounds;
+let worldPosX;
+let worldPosY;
 
 function preload() {
+  //load rooms from text files//
+  castleRoomLocked = loadStrings("assets/rooms/castle-room-locked.txt");
+  deadEndRoom1 = loadStrings("assets/rooms/dead-end-room-1.txt");
+  hallwayRoom3 = loadStrings("assets/rooms/hallway-3.txt");
+  hallwayRoom2 = loadStrings("assets/rooms/hallway-2.txt");
+  hallwayRoom1 = loadStrings("assets/rooms/hallway-1.txt");
+
+  //load backgrounds from assets folder//
   castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
   hallway1 = loadImage("assets/backgrounds/hallway-1.png");
-  castleRoomLocked = loadStrings("assets/rooms/castle-room-locked.txt");
-  hallwayRoom = loadStrings("assets/rooms/hallway-1.txt");
+  hallway2 = loadImage("assets/backgrounds/hallway-2.png");
+  hallway3 = loadImage("assets/backgrounds/hallway-3.png");
+  deadEnd1 = loadImage("assets/backgrounds/dead-end-1.png");
   swordRight = loadImage("assets/items/sword/sword-right.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
   greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
   greenDragonLeft = loadImage("assets/enemies/green-dragon-v2-left.png");
-  
 }
 
 function setup() {
   createCanvas(960, 540);
   angleMode(DEGREES);
-  grid = castleRoomLocked;
+  worldRooms = [
+    ["#","#","#","#","#",castleRoomLocked,"#","#","#","#","#"],
+    ["#","#","#","#",hallwayRoom2,hallwayRoom1,deadEndRoom1,"#","#","#","#"],
+    ["#","#","#","#","#",hallwayRoom3,"#","#","#","#","#"]
+  ];
+  worldBackrounds = [
+    ["#","#","#","#","#",castleLocked,"#","#","#","#","#"],
+    ["#","#","#","#",hallway2,hallway1,deadEnd1,"#","#","#","#"],
+    ["#","#","#","#","#",hallway3,"#","#","#","#","#"]
+  ];
+  worldPosX = 5;
+  worldPosY = 0;
   character = new Player(width/2,height/2);
-  enemy = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, hallwayRoom);
-  sword = new Item("sword",900,500,swordRight,swordLeft,20,20);
+  enemy = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, hallwayRoom1);
+  sword = new Item("sword",900,500,swordRight,swordLeft,20,20,castleRoomLocked);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
 }
 
 function draw() {
+  updateWorld();
   background(currentBackground);
   character.rooms();
   character.display();
@@ -73,7 +103,6 @@ class Player {
   display() {
     noStroke();
     fill("red");
-    //rectMode(CENTER);
     rect(this.x, this.y, this.size, this.size);
   }
 
@@ -114,13 +143,27 @@ class Player {
   rooms() {
     if (this.y === 530) {
       this.y = 20;
-      grid = hallwayRoom;
-      currentBackground = hallway1;
+      if (worldRooms[worldPosY + 1][worldPosX] !== "#") {
+        worldPosY += 1;
+      }
     }
     if (this.y-5 < 1) {
-      this.y = 530;
-      grid = castleRoomLocked;
-      currentBackground = castle;
+      this.y = 520;
+      if (worldRooms[worldPosY - 1][worldPosX] !== "#") {
+        worldPosY -= 1;
+      }
+    }
+    if (this.x === 950) {
+      this.x = 20;
+      if (worldRooms[worldPosY][worldPosX + 1] !== "#") {
+        worldPosX += 1;
+      }
+    }
+    if (this.x === 0) {
+      this.x = 940;
+      if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
+        worldPosX -= 1;
+      }
     }
   }
 
@@ -200,7 +243,7 @@ class Enemy {
 }
 
 class Item {
-  constructor(id,x, y, image1, image2, sideX, sideY) {
+  constructor(id,x, y, image1, image2, sideX, sideY, room) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -209,12 +252,15 @@ class Item {
     this.sideX = sideX;
     this.sideY = sideY;
     this.onGround = true;
+    this.room = room;
   }
   
   display() {
     if (this.onGround) {
-      image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
-      this.pickup();
+      if (grid === this.room) {
+        image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+        this.pickup();
+      }
     }
     else {
       if (character.leftOrRight === "right") {
@@ -236,9 +282,15 @@ class Item {
           if (j >= this.x && j < this.x+this.sideX) {
             this.onGround = false;
             inventory.set("holding",this.id);
+            inventory.set(1,this.id);
           }
         }
       }
     }
   }
+}
+
+function updateWorld() {
+  grid = worldRooms[worldPosY][worldPosX];
+  currentBackground = worldBackrounds[worldPosY][worldPosX];
 }
