@@ -5,46 +5,60 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 let castle;
-let currentRoom;
 let currentBackground;
-let character;
-let enemy;
 let castleLocked;
-let hallway1;
-let hallway2;
-let hallway3;
-let deadEnd1;
-let hallwayRoom1;
-let hallwayRoom2;
-let hallwayRoom3;
-let deadEndRoom1;
-let castleRoomLocked;
-let grid;
+let yellowInt;
+let yellowHallway;
+let red3Door;
+let yellowRoom;
+let swCornerYellow;
+let nwCornerBlue;
+//.....................................................//
 let swordRight;
 let swordLeft;
-let sword;
 let greenDragonRight;
 let greenDragonLeft;
+//.....................................................//
+let intersection;
+let hallway;
+let hallway3Door;
+let swCorner;
+let nwCorner;
+let room;
+let coinRoom;
+let castleRoomLocked;
+//.....................................................//
+let grid;
 let inventory;
 let worldRooms;
 let worldBackrounds;
+let currentRoom;
 let worldPosX;
 let worldPosY;
+//.....................................................//
+let character;
+let dirsim;
+let sword;
 
 function preload() {
   //load rooms from text files//
   castleRoomLocked = loadStrings("assets/rooms/castle-room-locked.txt");
-  deadEndRoom1 = loadStrings("assets/rooms/dead-end-room-1.txt");
-  hallwayRoom3 = loadStrings("assets/rooms/hallway-3.txt");
-  hallwayRoom2 = loadStrings("assets/rooms/hallway-2.txt");
-  hallwayRoom1 = loadStrings("assets/rooms/hallway-1.txt");
+  room = loadStrings("assets/rooms/room.txt");
+  swCorner = loadStrings("assets/rooms/sw-corner.txt");
+  nwCorner = loadStrings("assets/rooms/nw-corner.txt");
+  coinRoom = loadStrings("assets/rooms/coin-room.txt");
+  hallway3Door = loadStrings("assets/rooms/3-door-hall.txt");
+  hallway = loadStrings("assets/rooms/hallway.txt");
+  intersection = loadStrings("assets/rooms/4-way-int.txt");
 
   //load backgrounds from assets folder//
-  castleLocked = loadImage("assets/backgrounds/castle-room-locked.png");
-  hallway1 = loadImage("assets/backgrounds/hallway-1.png");
-  hallway2 = loadImage("assets/backgrounds/hallway-2.png");
-  hallway3 = loadImage("assets/backgrounds/hallway-3.png");
-  deadEnd1 = loadImage("assets/backgrounds/dead-end-1.png");
+  castleLocked = loadImage("assets/backgrounds/castle/castle-room-locked.png");
+  yellowInt = loadImage("assets/backgrounds/yellow/yellow-intersection.png");
+  yellowHallway = loadImage("assets/backgrounds/yellow/yellow-hallway.png");
+  swCornerYellow = loadImage("assets/backgrounds/yellow/yellow-corner-sw.png");
+  nwCornerBlue = loadImage("assets/backgrounds/blue/blue-corner-nw.png");
+  red3Door = loadImage("assets/backgrounds/red/red-3-door.png");
+  yellowRoom = loadImage("assets/backgrounds/yellow/yellow-room.png");
   swordRight = loadImage("assets/items/sword/sword-right.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
   greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
@@ -55,20 +69,20 @@ function setup() {
   createCanvas(960, 540);
   angleMode(DEGREES);
   worldRooms = [
-    ["#","#","#","#","#",castleRoomLocked,"#","#","#","#","#"],
-    ["#","#","#","#",hallwayRoom2,hallwayRoom1,deadEndRoom1,"#","#","#","#"],
-    ["#","#","#","#","#",hallwayRoom3,"#","#","#","#","#"]
+    ["#","#","#",nwCorner,"#",castleRoomLocked,"#","#","#","#","#"],
+    ["#","#","#",swCorner,hallway,intersection,coinRoom,"#","#","#","#"],
+    ["#","#","#","#","#",hallway3Door,"#","#","#","#","#"]
   ];
   worldBackrounds = [
-    ["#","#","#","#","#",castleLocked,"#","#","#","#","#"],
-    ["#","#","#","#",hallway2,hallway1,deadEnd1,"#","#","#","#"],
-    ["#","#","#","#","#",hallway3,"#","#","#","#","#"]
+    ["#","#","#",nwCornerBlue,"#",castleLocked,"#","#","#","#","#"],
+    ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,"#","#","#","#"],
+    ["#","#","#","#","#",red3Door,"#","#","#","#","#"]
   ];
   worldPosX = 5;
   worldPosY = 0;
   character = new Player(width/2,height/2);
-  enemy = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, hallwayRoom1);
-  sword = new Item("sword",900,500,swordRight,swordLeft,20,20,castleRoomLocked);
+  dirsim = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, worldRooms[1][5],false,1,"none","Dirsim");
+  sword = new Item("sword",900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
@@ -79,10 +93,11 @@ function draw() {
   background(currentBackground);
   character.rooms();
   character.display();
-  enemy.spawn();
-  enemy.move();
-  enemy.display();
-  enemy.killPlayer();
+  dirsim.spawn();
+  dirsim.flee();
+  dirsim.move();
+  dirsim.display();
+  dirsim.killPlayer();
   character.position();
   character.inputHandler();
   sword.display();
@@ -174,7 +189,7 @@ class Player {
 }
 
 class Enemy {
-  constructor(x,y,image1,image2,speed,room) {
+  constructor(x,y,image1,image2,speed,room,flee,tier,fear,name) {
     this.x = x;
     this.y = y;
     this.imageRight = image1;
@@ -183,6 +198,11 @@ class Enemy {
     this.spawnRoom = room;
     this.alive = false;
     this.hasBeenKilled = false;
+    this.willflee = flee;
+    this.fleeing = false;
+    this.tier = tier;
+    this.fear = fear;
+    this.name = name;
   }
 
   spawn() {
@@ -202,28 +222,66 @@ class Enemy {
 
   display() {
     if (this.alive) {
-      if (character.x >= this.x) {
-        image (this.imageRight, this.x, this.y, 64, 64);
+      if (this.fleeing) {
+        if (character.x <= this.x) {
+          image (this.imageRight, this.x, this.y, 64, 64);
+        }
+        else {
+          image (this.imageLeft, this.x, this.y, 64, 64);
+        }
       }
       else {
-        image (this.imageLeft, this.x, this.y, 64, 64);
+        if (character.x >= this.x) {
+          image (this.imageRight, this.x, this.y, 64, 64);
+        }
+        else {
+          image (this.imageLeft, this.x, this.y, 64, 64);
+        }
       }
     }
   }
 
   move() {
     if (this.alive) {
-      if (character.x + 10 > this.x + 64) {
-        this.x += this.speed;
+      if (this.fleeing) {
+        if (character.x + 10 > this.x + 64) {
+          this.x -= this.speed/2;
+        }
+        if (character.y >= this.y + 10) {
+          this.y -= this.speed/2;
+          
+        }
+        if (character.x < this.x) {
+          this.x += this.speed/2;
+        }
+        if (character.y < this.y) {
+          this.y += this.speed/2;
+        }
       }
-      if (character.y >= this.y + 10) {
-        this.y += this.speed;
+      else {
+        if (character.x + 10 > this.x + 64) {
+          this.x += this.speed;
+        }
+        if (character.y >= this.y + 10) {
+          this.y += this.speed;
+        }
+        if (character.x < this.x) {
+          this.x -= this.speed;
+        }
+        if (character.y < this.y) {
+          this.y -= this.speed;
+        }
       }
-      if (character.x < this.x) {
-        this.x -= this.speed;
+    }
+  }
+
+  flee() {
+    if (this.willflee) {
+      if (inventory.get("holding") === this.fear) {
+        this.fleeing = true;
       }
-      if (character.y < this.y) {
-        this.y -= this.speed;
+      else {
+        this.fleeing = false;
       }
     }
   }
@@ -233,6 +291,7 @@ class Enemy {
       if (character.x+10 > this.x && character.x < this.x +64 && character.y > this.y && character.y < this.y + 64) {
         if (inventory.get("holding") === "sword") {
           this.hasBeenKilled = true;
+          console.log(this.name + " has been slain");
         }
         else {
           character.death();
@@ -280,9 +339,15 @@ class Item {
       for(let j=character.x; j<character.x+10; j++) {
         if (i >= this.y && i <this.y+this.sideY ) {
           if (j >= this.x && j < this.x+this.sideX) {
-            this.onGround = false;
-            inventory.set("holding",this.id);
-            inventory.set(1,this.id);
+            for (let k=1; k<4; k++) {
+              if (!inventory.has(k)) {
+                this.onGround = false;
+                inventory.set(k,this.id);
+                if (inventory.get(1) === this.id) {
+                  inventory.set("holding",this.id);
+                }
+              }
+            }
           }
         }
       }
