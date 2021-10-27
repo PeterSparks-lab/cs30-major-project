@@ -10,13 +10,17 @@ let castleLocked;
 let yellowInt;
 let yellowHallway;
 let red3Door;
+let redHall;
 let yellowRoom;
 let swCornerYellow;
 let nwCornerBlue;
+let redCastleLocked;
+let redCastleUnlocked;
 //.....................................................//
 let swordRight;
 let swordLeft;
 let theCoin;
+let squareKey;
 let greenDragonRight;
 let greenDragonLeft;
 //.....................................................//
@@ -25,8 +29,11 @@ let hallway;
 let hallway3Door;
 let swCorner;
 let nwCorner;
+let castleRedLocked;
+let castleRedUnlocked;
 let room;
 let coinRoom;
+let keyHall;
 let castleRoomLocked;
 //.....................................................//
 let grid;
@@ -39,6 +46,7 @@ let worldPosY;
 //.....................................................//
 let character;
 let coin;
+let keySquare;
 let dirsim;
 let sword;
 
@@ -52,17 +60,24 @@ function preload() {
   hallway3Door = loadStrings("assets/rooms/3-door-hall.txt");
   hallway = loadStrings("assets/rooms/hallway.txt");
   intersection = loadStrings("assets/rooms/4-way-int.txt");
+  keyHall = loadStrings("assets/rooms/square-key-hall.txt");
+  castleRedLocked = loadStrings("assets/rooms/red-castle-locked.txt");
+  castleRedUnlocked = loadStrings("assets/rooms/red-castle-unlocked.txt");
 
   //load backgrounds from assets folder//
+  redCastleLocked = loadImage("assets/backgrounds/castle/red-castle-locked.png");
+  redCastleUnlocked = loadImage("assets/backgrounds/castle/unlocked-red-castle.png");
   castleLocked = loadImage("assets/backgrounds/castle/castle-room-locked.png");
   yellowInt = loadImage("assets/backgrounds/yellow/yellow-intersection.png");
   yellowHallway = loadImage("assets/backgrounds/yellow/yellow-hallway.png");
   swCornerYellow = loadImage("assets/backgrounds/yellow/yellow-corner-sw.png");
   nwCornerBlue = loadImage("assets/backgrounds/blue/blue-corner-nw.png");
   red3Door = loadImage("assets/backgrounds/red/red-3-door.png");
+  redHall = loadImage("assets/backgrounds/red/red-hallway.png");
   yellowRoom = loadImage("assets/backgrounds/yellow/yellow-room.png");
   swordRight = loadImage("assets/items/sword/sword-right.png");
-  theCoin = loadImage("assets/items/coin/coin.png");
+  theCoin = loadImage("assets/items/coin/the-coin.png");
+  squareKey = loadImage("assets/items/keys/key-square.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
   greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
   greenDragonLeft = loadImage("assets/enemies/green-dragon-v2-left.png");
@@ -72,21 +87,22 @@ function setup() {
   createCanvas(960, 540);
   angleMode(DEGREES);
   worldRooms = [
-    ["#","#","#",nwCorner,"#",castleRoomLocked,"#","#","#","#","#"],
+    ["#","#","#",nwCorner,castleRedLocked,castleRoomLocked,"#","#","#","#","#"],
     ["#","#","#",swCorner,hallway,intersection,coinRoom,"#","#","#","#"],
-    ["#","#","#","#","#",hallway3Door,"#","#","#","#","#"]
+    ["#","#","#","#","#",hallway3Door,keyHall,"#","#","#","#"]
   ];
   worldBackrounds = [
-    ["#","#","#",nwCornerBlue,"#",castleLocked,"#","#","#","#","#"],
+    ["#","#","#",nwCornerBlue,redCastleLocked,castleLocked,"#","#","#","#","#"],
     ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,"#","#","#","#"],
-    ["#","#","#","#","#",red3Door,"#","#","#","#","#"]
+    ["#","#","#","#","#",red3Door,redHall,"#","#","#","#"]
   ];
   worldPosX = 5;
   worldPosY = 0;
   character = new Player(width/2,height/2);
   dirsim = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, worldRooms[1][5],false,1,"none","Dirsim");
   sword = new Item("sword","weapon",900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
-  coin = new Item("coin","tool",100,450,theCoin,theCoin,9,9,worldRooms[1][6]);
+  coin = new Item("coin","tool",100,450,theCoin,theCoin,13,13,worldRooms[1][6]);
+  keySquare = new Item("square-key","tool",100,100,squareKey,squareKey,21,7,worldRooms[2][6]);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
@@ -99,6 +115,7 @@ function draw() {
   character.rooms();
   character.display();
   coin.display();
+  keySquare.display();
   dirsim.spawn();
   dirsim.flee();
   dirsim.move();
@@ -169,15 +186,20 @@ class Player {
         inventory.set("holding",inventory.get(2));
       }
     }
+    if (keyIsDown(51)) {
+      if (inventory.has(3)) {
+        inventory.set("holding",inventory.get(3));
+      }
+    }
     if (keyIsDown(32)) {
       if (inventory.has("holding")) {
         for (let i=1; i<4; i++) {
           if (inventory.get(i) === inventory.get("holding")) {
-            inventory.delete("holding");
             inventory.set("discard",inventory.get(i));
             inventory.delete(i);
+            inventory.delete("holding");
+            return inventory;
           }
-          return inventory;
         }
 
       }
@@ -207,6 +229,18 @@ class Player {
       this.x = 940;
       if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
         worldPosX -= 1;
+      }
+    }
+  }
+
+  unlock() {
+    if (inventory.has("holding")) {
+      if (inventory.get("holding") === keySquare.id) {
+        if (grid === worldRooms[0][4]) {
+          if (grid[this.posY+1][this.posX] === "G") {
+            worldRooms[0][4] = castleRedUnlocked;
+          }
+        }
       }
     }
   }
