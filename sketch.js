@@ -48,6 +48,7 @@ let character;
 let coin;
 let keySquare;
 let dirsim;
+let tergim;
 let sword;
 
 function preload() {
@@ -100,9 +101,10 @@ function setup() {
   worldPosY = 0;
   character = new Player(width/2,height/2);
   dirsim = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, worldRooms[1][5],false,1,"none","Dirsim");
-  sword = new Item("sword","weapon",900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
-  coin = new Item("coin","tool",100,450,theCoin,theCoin,13,13,worldRooms[1][6]);
-  keySquare = new Item("square-key","tool",100,100,squareKey,squareKey,21,7,worldRooms[2][6]);
+  tergim = new Enemy(750,160,greenDragonRight,greenDragonLeft,5,worldRooms[0][3],true,1,"square-key","Tergim");
+  sword = new Weapon("sword",900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
+  coin = new Item("coin",100,450,theCoin,13,13,worldRooms[1][6]);
+  keySquare = new Item("square-key",100,100,squareKey,21,7,worldRooms[2][6]);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
@@ -114,13 +116,19 @@ function draw() {
   background(currentBackground);
   character.rooms();
   character.display();
+  character.unlock();
   coin.display();
   keySquare.display();
   dirsim.spawn();
+  tergim.spawn();
   dirsim.flee();
+  tergim.flee();
   dirsim.move();
+  tergim.move();
   dirsim.display();
+  tergim.display();
   dirsim.killPlayer();
+  tergim.killPlayer();
   character.position();
   character.inputHandler();
   sword.display();
@@ -237,8 +245,9 @@ class Player {
     if (inventory.has("holding")) {
       if (inventory.get("holding") === keySquare.id) {
         if (grid === worldRooms[0][4]) {
-          if (grid[this.posY+1][this.posX] === "G") {
+          if (grid[this.posY-1][this.posX] === "G") {
             worldRooms[0][4] = castleRedUnlocked;
+            worldBackrounds[0][4] = redCastleUnlocked;
           }
         }
       }
@@ -365,13 +374,11 @@ class Enemy {
 }
 
 class Item {
-  constructor(id, type, x, y, image1, image2, sideX, sideY, room) {
+  constructor(id, x, y, image, sideX, sideY, room) {
     this.id = id;
-    this.type = type;
     this.x = x;
     this.y = y;
-    this.imageRight = image1;
-    this.imageLeft = image2;
+    this.image = image;
     this.sideX = sideX;
     this.sideY = sideY;
     this.onGround = true;
@@ -382,32 +389,20 @@ class Item {
   display() {
     if (this.onGround) {
       if (grid === this.room) {
-        image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+        image(this.image, this.x, this.y, this.sideX, this.sideY);
         this.pickup();
       }
       else if (grid === this.lastRoom) {
-        image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+        image(this.image, this.x, this.y, this.sideX, this.sideY);
         this.pickup();
       }
     }
     else {
       if (inventory.get("holding") === this.id) {
-        if (this.type === "weapon") {
-          if (character.leftOrRight === "right") {
-            image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
-            this.x = character.x+10;
-          }
-          else {
-            image(this.imageLeft, this.x, this.y, this.sideX, this.sideY);
-            this.x = character.x-20;
-          }
-          this.y = character.y-5;
-        }
-        else {
-          this.x = character.x;
-          this.y = character.y-this.sideY;
-          image(this.imageLeft,this.x,this.y,this.sideX,this.sideY);
-        }
+        this.x = character.x;
+        this.y = character.y-this.sideY;
+        image(this.image,this.x,this.y,this.sideX,this.sideY);
+        
       }
       if (inventory.get("discard") === this.id) {
         if (grid[character.posY][character.posX-2] === ".") {
@@ -417,9 +412,15 @@ class Item {
           this.lastRoom = grid;
           this.onGround = true;
         }
-        else {
+        else if (grid[character.posY][character.posX+2] === "."){
           this.x += 30;
           this.y = character.y;
+          inventory.delete("discard");
+          this.lastRoom = grid;
+          this.onGround = true;
+        }
+        else {
+          this.y = character.y -= 20;
           inventory.delete("discard");
           this.lastRoom = grid;
           this.onGround = true;
@@ -453,4 +454,90 @@ class Item {
 function updateWorld() {
   grid = worldRooms[worldPosY][worldPosX];
   currentBackground = worldBackrounds[worldPosY][worldPosX];
+}
+
+
+
+class Weapon {
+  constructor(id, x, y, imageRight, imageLeft, sideX, sideY, room) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.imageRight = imageRight;
+    this.imageLeft = imageLeft;
+    this.sideX = sideX;
+    this.sideY = sideY;
+    this.onGround = true;
+    this.room = room;
+    this.lastRoom;
+  }
+
+  display() {
+    if (this.onGround) {
+      if (grid === this.room) {
+        image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+        this.pickup();
+      }
+      else if (grid === this.lastRoom) {
+        image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+        this.pickup();
+      }
+    }
+    else {
+      if (inventory.get("holding") === this.id) {
+        if (character.leftOrRight === "right") {
+          image(this.imageRight, this.x, this.y, this.sideX, this.sideY);
+          this.x = character.x+10;
+        }
+        else {
+          image(this.imageLeft, this.x, this.y, this.sideX, this.sideY);
+          this.x = character.x-20;
+        }
+        this.y = character.y-5;
+      }
+      if (inventory.get("discard") === this.id) {
+        if (grid[character.posY][character.posX-2] === ".") {
+          this.x -= 20;
+          this.y = character.y;
+          inventory.delete("discard");
+          this.lastRoom = grid;
+          this.onGround = true;
+        }
+        else if (grid[character.posY][character.posX+2] === "."){
+          this.x += 30;
+          this.y = character.y;
+          inventory.delete("discard");
+          this.lastRoom = grid;
+          this.onGround = true;
+        }
+        else {
+          this.y = character.y -= 20;
+          inventory.delete("discard");
+          this.lastRoom = grid;
+          this.onGround = true;
+        }
+      }
+    }
+  }
+
+  pickup() {
+    for(let i=character.y; i<character.y+10; i++) {
+      for(let j=character.x; j<character.x+10; j++) {
+        if (i >= this.y && i <this.y+this.sideY ) {
+          if (j >= this.x && j < this.x+this.sideX) {
+            for (let k=1; k<4; k++) {
+              if (inventory.has(k) === false) {
+                this.onGround = false;
+                inventory.set(k,this.id);
+                if (inventory.get(1) === this.id) {
+                  inventory.set("holding",this.id);
+                }
+                return inventory;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
