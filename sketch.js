@@ -16,6 +16,7 @@ let swCornerYellow;
 let nwCornerBlue;
 let redCastleLocked;
 let redCastleUnlocked;
+let redInside;
 //.....................................................//
 let swordRight;
 let swordLeft;
@@ -35,6 +36,7 @@ let room;
 let coinRoom;
 let keyHall;
 let castleRoomLocked;
+let redInterior;
 //.....................................................//
 let grid;
 let inventory;
@@ -43,6 +45,7 @@ let worldBackrounds;
 let currentRoom;
 let worldPosX;
 let worldPosY;
+let inBuilding = false;
 //.....................................................//
 let character;
 let coin;
@@ -53,6 +56,7 @@ let sword;
 
 function preload() {
   //load rooms from text files//
+  redInterior = loadStrings("assets/rooms/red-interior.txt");
   castleRoomLocked = loadStrings("assets/rooms/castle-room-locked.txt");
   room = loadStrings("assets/rooms/room.txt");
   swCorner = loadStrings("assets/rooms/sw-corner.txt");
@@ -66,6 +70,7 @@ function preload() {
   castleRedUnlocked = loadStrings("assets/rooms/red-castle-unlocked.txt");
 
   //load backgrounds from assets folder//
+  redInside = loadImage("assets/backgrounds/castle/red-castle-inside.png");
   redCastleLocked = loadImage("assets/backgrounds/castle/red-castle-locked.png");
   redCastleUnlocked = loadImage("assets/backgrounds/castle/unlocked-red-castle.png");
   castleLocked = loadImage("assets/backgrounds/castle/castle-room-locked.png");
@@ -212,32 +217,60 @@ class Player {
 
       }
     }
+    if (keyIsDown(69)) {
+      if (inventory.has("holding")) {
+        if (inventory.get("holding") === "coin") {
+          if (grid[this.posY][this.posX-1] === "$" || grid[this.posY+1][this.posX] === "$") {
+            for (let i=1; i<4; i++) {
+              if (inventory.get(i) === inventory.get("holding")) {
+                inventory.set("discard",inventory.get(i));
+                inventory.delete(i);
+                inventory.delete("holding");
+                coin.spent = true;
+                return inventory;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   rooms() {
-    if (this.y === 530) {
-      this.y = 20;
-      if (worldRooms[worldPosY + 1][worldPosX] !== "#") {
-        worldPosY += 1;
+    if (grid === castleRedUnlocked) {
+      if (this.posX >= 48 && this.posX <= 51 && this.posY === 14) {
+        inBuilding = true;
+        this.x = 520;
+        grid = redInterior;
+        currentBackground = redInside;
       }
     }
-    if (this.y-5 < 1) {
-      this.y = 520;
-      if (worldRooms[worldPosY - 1][worldPosX] !== "#") {
-        worldPosY -= 1;
+    else {
+      if (this.y === 530) {
+        this.y = 20;
+        if (worldRooms[worldPosY + 1][worldPosX] !== "#") {
+          worldPosY += 1;
+        }
       }
-    }
-    if (this.x === 950) {
-      this.x = 20;
-      if (worldRooms[worldPosY][worldPosX + 1] !== "#") {
-        worldPosX += 1;
+      if (this.y-5 < 1) {
+        this.y = 520;
+        if (worldRooms[worldPosY - 1][worldPosX] !== "#") {
+          worldPosY -= 1;
+        }
       }
-    }
-    if (this.x === 0) {
-      this.x = 940;
-      if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
-        worldPosX -= 1;
+      if (this.x === 950) {
+        this.x = 20;
+        if (worldRooms[worldPosY][worldPosX + 1] !== "#") {
+          worldPosX += 1;
+        }
       }
+      if (this.x === 0) {
+        this.x = 940;
+        if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
+          worldPosX -= 1;
+        }
+      }
+
     }
   }
 
@@ -316,18 +349,21 @@ class Enemy {
   move() {
     if (this.alive) {
       if (this.fleeing) {
-        if (character.x + 10 > this.x + 64) {
-          this.x -= this.speed/2;
-        }
-        if (character.y >= this.y + 10) {
-          this.y -= this.speed/2;
-          
-        }
-        if (character.x < this.x) {
-          this.x += this.speed/2;
-        }
-        if (character.y < this.y) {
-          this.y += this.speed/2;
+        if (this.y > 40 && this.y+64 < height-40 && this.x > 40 && this.x+64 < width-40) {
+
+          if (character.x + 10 > this.x + 64) {
+            this.x -= this.speed/2;
+          }
+          if (character.y >= this.y + 10) {
+            this.y -= this.speed/2;
+            
+          }
+          if (character.x < this.x) {
+            this.x += this.speed/2;
+          }
+          if (character.y < this.y) {
+            this.y += this.speed/2;
+          }
         }
       }
       else {
@@ -384,64 +420,69 @@ class Item {
     this.onGround = true;
     this.room = room;
     this.lastRoom;
+    this.spent = false;
   }
   
   display() {
-    if (this.onGround) {
-      if (grid === this.room) {
-        image(this.image, this.x, this.y, this.sideX, this.sideY);
-        this.pickup();
-      }
-      else if (grid === this.lastRoom) {
-        image(this.image, this.x, this.y, this.sideX, this.sideY);
-        this.pickup();
-      }
-    }
-    else {
-      if (inventory.get("holding") === this.id) {
-        this.x = character.x;
-        this.y = character.y-this.sideY;
-        image(this.image,this.x,this.y,this.sideX,this.sideY);
-        
-      }
-      if (inventory.get("discard") === this.id) {
-        if (grid[character.posY][character.posX-2] === ".") {
-          this.x -= 20;
-          this.y = character.y;
-          inventory.delete("discard");
-          this.lastRoom = grid;
-          this.onGround = true;
+    if (this.spent === false) {
+      if (this.onGround) {
+        if (grid === this.room) {
+          image(this.image, this.x, this.y, this.sideX, this.sideY);
+          this.pickup();
         }
-        else if (grid[character.posY][character.posX+2] === "."){
-          this.x += 30;
-          this.y = character.y;
-          inventory.delete("discard");
-          this.lastRoom = grid;
-          this.onGround = true;
+        else if (grid === this.lastRoom) {
+          image(this.image, this.x, this.y, this.sideX, this.sideY);
+          this.pickup();
         }
-        else {
-          this.y = character.y -= 20;
-          inventory.delete("discard");
-          this.lastRoom = grid;
-          this.onGround = true;
+      }
+      else {
+        if (inventory.get("holding") === this.id) {
+          this.x = character.x;
+          this.y = character.y-this.sideY;
+          image(this.image,this.x,this.y,this.sideX,this.sideY);
+          
+        }
+        if (inventory.get("discard") === this.id) {
+          if (grid[character.posY][character.posX-2] === ".") {
+            this.x -= 20;
+            this.y = character.y;
+            inventory.delete("discard");
+            this.lastRoom = grid;
+            this.onGround = true;
+          }
+          else if (grid[character.posY][character.posX+2] === "."){
+            this.x += 30;
+            this.y = character.y;
+            inventory.delete("discard");
+            this.lastRoom = grid;
+            this.onGround = true;
+          }
+          else {
+            this.y = character.y -= 20;
+            inventory.delete("discard");
+            this.lastRoom = grid;
+            this.onGround = true;
+          }
         }
       }
     }
   }
 
   pickup() {
-    for(let i=character.y; i<character.y+10; i++) {
-      for(let j=character.x; j<character.x+10; j++) {
-        if (i >= this.y && i <this.y+this.sideY ) {
-          if (j >= this.x && j < this.x+this.sideX) {
-            for (let k=1; k<4; k++) {
-              if (inventory.has(k) === false) {
-                this.onGround = false;
-                inventory.set(k,this.id);
-                if (inventory.get(1) === this.id) {
-                  inventory.set("holding",this.id);
+    if (this.spent === false) {
+      for(let i=character.y; i<character.y+10; i++) {
+        for(let j=character.x; j<character.x+10; j++) {
+          if (i >= this.y && i <this.y+this.sideY ) {
+            if (j >= this.x && j < this.x+this.sideX) {
+              for (let k=1; k<4; k++) {
+                if (inventory.has(k) === false) {
+                  this.onGround = false;
+                  inventory.set(k,this.id);
+                  if (inventory.get(1) === this.id) {
+                    inventory.set("holding",this.id);
+                  }
+                  return inventory;
                 }
-                return inventory;
               }
             }
           }
@@ -452,8 +493,10 @@ class Item {
 }
 
 function updateWorld() {
-  grid = worldRooms[worldPosY][worldPosX];
-  currentBackground = worldBackrounds[worldPosY][worldPosX];
+  if (inBuilding === false) {
+    grid = worldRooms[worldPosY][worldPosX];
+    currentBackground = worldBackrounds[worldPosY][worldPosX];
+  }
 }
 
 
