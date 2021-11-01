@@ -22,6 +22,7 @@ let swordRight;
 let swordLeft;
 let theCoin;
 let squareKey;
+let roundKey;
 let greenDragonRight;
 let greenDragonLeft;
 //.....................................................//
@@ -37,6 +38,8 @@ let coinRoom;
 let keyHall;
 let castleRoomLocked;
 let redInterior;
+let hall;
+let intersection3;
 //.....................................................//
 let grid;
 let inventory;
@@ -50,6 +53,7 @@ let inBuilding = false;
 let character;
 let coin;
 let keySquare;
+let keyRound;
 let dirsim;
 let tergim;
 let sword;
@@ -64,10 +68,12 @@ function preload() {
   coinRoom = loadStrings("assets/rooms/coin-room.txt");
   hallway3Door = loadStrings("assets/rooms/3-door-hall.txt");
   hallway = loadStrings("assets/rooms/hallway.txt");
+  intersection3 = loadStrings("assets/rooms/3-int.txt");
   intersection = loadStrings("assets/rooms/4-way-int.txt");
   keyHall = loadStrings("assets/rooms/square-key-hall.txt");
   castleRedLocked = loadStrings("assets/rooms/red-castle-locked.txt");
   castleRedUnlocked = loadStrings("assets/rooms/red-castle-unlocked.txt");
+  hall = loadStrings("assets/rooms/room-2-4.txt");
 
   //load backgrounds from assets folder//
   redInside = loadImage("assets/backgrounds/castle/red-castle-inside.png");
@@ -84,6 +90,7 @@ function preload() {
   swordRight = loadImage("assets/items/sword/sword-right.png");
   theCoin = loadImage("assets/items/coin/the-coin.png");
   squareKey = loadImage("assets/items/keys/key-square.png");
+  roundKey = loadImage("assets/items/keys/round-key.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
   greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
   greenDragonLeft = loadImage("assets/enemies/green-dragon-v2-left.png");
@@ -95,12 +102,12 @@ function setup() {
   worldRooms = [
     ["#","#","#",nwCorner,castleRedLocked,castleRoomLocked,"#","#","#","#","#"],
     ["#","#","#",swCorner,hallway,intersection,coinRoom,"#","#","#","#"],
-    ["#","#","#","#","#",hallway3Door,keyHall,"#","#","#","#"]
+    ["#","#","#","#",hall,hallway3Door,keyHall,intersection3,"#","#","#"]
   ];
   worldBackrounds = [
     ["#","#","#",nwCornerBlue,redCastleLocked,castleLocked,"#","#","#","#","#"],
     ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,"#","#","#","#"],
-    ["#","#","#","#","#",red3Door,redHall,"#","#","#","#"]
+    ["#","#","#","#",redHall,red3Door,redHall,red3Door,"#","#","#"]
   ];
   worldPosX = 5;
   worldPosY = 0;
@@ -108,8 +115,9 @@ function setup() {
   dirsim = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, worldRooms[1][5],false,1,"none","Dirsim");
   tergim = new Enemy(750,160,greenDragonRight,greenDragonLeft,5,worldRooms[0][3],true,1,"square-key","Tergim");
   sword = new Weapon("sword",900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
-  coin = new Item("coin",100,450,theCoin,13,13,worldRooms[1][6]);
-  keySquare = new Item("square-key",100,100,squareKey,21,7,worldRooms[2][6]);
+  coin = new Item("coin",100,450,theCoin,13,13,worldRooms[1][6],false);
+  keySquare = new Item("square-key",100,100,squareKey,21,7,worldRooms[2][6],false);
+  keyRound = new Item("round-key",100,100,roundKey,21,7,redInterior,true);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
@@ -124,6 +132,7 @@ function draw() {
   character.unlock();
   coin.display();
   keySquare.display();
+  keyRound.display();
   dirsim.spawn();
   tergim.spawn();
   dirsim.flee();
@@ -227,6 +236,7 @@ class Player {
                 inventory.delete(i);
                 inventory.delete("holding");
                 coin.spent = true;
+                keyRound.spent = false;
                 return inventory;
               }
             }
@@ -243,6 +253,21 @@ class Player {
         this.x = 520;
         grid = redInterior;
         currentBackground = redInside;
+      }
+      else if (this.x === 0) {
+        this.x = 940;
+        if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
+          worldPosX -= 1;
+        }
+      }
+    }
+    else if (grid === redInterior) {
+      if (this.y >520) {
+        inBuilding = false;
+        this.x = 480;
+        this.y = 240;
+        grid = worldRooms[0][4];
+        currentBackground = worldBackrounds[0][4];
       }
     }
     else {
@@ -410,7 +435,7 @@ class Enemy {
 }
 
 class Item {
-  constructor(id, x, y, image, sideX, sideY, room) {
+  constructor(id, x, y, image, sideX, sideY, room, onStart) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -420,7 +445,7 @@ class Item {
     this.onGround = true;
     this.room = room;
     this.lastRoom;
-    this.spent = false;
+    this.spent = onStart;
   }
   
   display() {
