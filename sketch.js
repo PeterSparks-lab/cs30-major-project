@@ -16,6 +16,8 @@ let swCornerYellow;
 let nwCornerBlue;
 let redCastleLocked;
 let redCastleUnlocked;
+let blackCastleLocked;
+let blackCastleUnlocked;
 let redInside;
 //.....................................................//
 let swordRight;
@@ -26,16 +28,16 @@ let roundKey;
 let greenDragonRight;
 let greenDragonLeft;
 //.....................................................//
-let intersection;
-let hallway;
-let swCorner;
+let room1_5;
+let room1_4;
+let room1_3;
 let room0Locked;
 let room0Unlocked;
 let room3;
 let room4Locked;
 let room4Unlocked;
-let room;
-let coinRoom;
+let room2;
+let room1_6;
 let room2_6;
 let room5Locked;
 let redInterior;
@@ -65,6 +67,7 @@ function preload() {
   //top//
   room0Locked = loadStrings("assets/rooms/top-row/room0-locked.txt");
   room0Unlocked = loadStrings("assets/rooms/top-row/room0-unlocked.txt");
+  room2 = loadStrings("assets/rooms/top-row/room2.txt");
   room3 = loadStrings("assets/rooms/top-row/room3.txt");
   room4Locked = loadStrings("assets/rooms/top-row/room4-locked.txt");
   room4Unlocked = loadStrings("assets/rooms/top-row/room4-unlocked.txt");
@@ -73,23 +76,27 @@ function preload() {
   //mid//
 
 
-  redInterior = loadStrings("assets/rooms/interiors/red-interior.txt");
-  room = loadStrings("assets/rooms/room.txt");
-  swCorner = loadStrings("assets/rooms/sw-corner.txt");
-  coinRoom = loadStrings("assets/rooms/coin-room.txt");
-  hallway = loadStrings("assets/rooms/hallway.txt");
-  intersection = loadStrings("assets/rooms/4-way-int.txt");
-
+  room1_3 = loadStrings("assets/rooms/mid-row/room-1-3.txt");
+  room1_4 = loadStrings("assets/rooms/mid-row/room-1-4.txt");
+  room1_5 = loadStrings("assets/rooms/mid-row/room-1-5.txt");
+  room1_6 = loadStrings("assets/rooms/mid-row/room-1-6.txt");
+  
   //bottom//
   room2_4 = loadStrings("assets/rooms/bottom-row/room-2-4.txt");
   room2_5 = loadStrings("assets/rooms/bottom-row/room-2-5.txt");
   room2_6 = loadStrings("assets/rooms/bottom-row/room-2-6.txt");
   room2_7 = loadStrings("assets/rooms/bottom-row/room-2-7.txt");
   
+  //interiors//
+  redInterior = loadStrings("assets/rooms/interiors/red-interior.txt");
+
+
   //load backgrounds from assets folder//
   redInside = loadImage("assets/backgrounds/castle/red-castle-inside.png");
   redCastleLocked = loadImage("assets/backgrounds/castle/red-castle-locked.png");
   redCastleUnlocked = loadImage("assets/backgrounds/castle/unlocked-red-castle.png");
+  blackCastleLocked = loadImage("assets/backgrounds/castle/black-castle-locked.png");
+  blackCastleUnlocked = loadImage("assets/backgrounds/castle/black-castle-unlocked.png");
   castleLocked = loadImage("assets/backgrounds/castle/castle-room-locked.png");
   yellowInt = loadImage("assets/backgrounds/yellow/yellow-intersection.png");
   yellowHallway = loadImage("assets/backgrounds/yellow/yellow-hallway.png");
@@ -111,12 +118,12 @@ function setup() {
   createCanvas(960, 540);
   angleMode(DEGREES);
   worldRooms = [
-    [room0Locked,"#","#", room3, room4Locked, room5Locked,"#","#","#","#","#"],
-    ["#","#","#", swCorner, hallway, intersection, coinRoom,"#","#","#","#"],
+    [room0Locked,"#",room2, room3, room4Locked, room5Locked,"#","#","#","#","#"],
+    ["#","#","#", room1_3, room1_4, room1_5, room1_6,"#","#","#","#"],
     ["#","#","#","#", room2_4, room2_5, room2_6, room2_7,"#","#","#"]
   ];
   worldBackrounds = [
-    ["#","#","#",nwCornerBlue,redCastleLocked,castleLocked,"#","#","#","#","#"],
+    [blackCastleLocked,"#","#",nwCornerBlue,redCastleLocked,castleLocked,"#","#","#","#","#"],
     ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,"#","#","#","#"],
     ["#","#","#","#",redHall,red3Door,redHall,red3Door,"#","#","#"]
   ];
