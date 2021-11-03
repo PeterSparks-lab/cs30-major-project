@@ -9,24 +9,31 @@ let currentBackground;
 let castleLocked;
 let yellowInt;
 let yellowHallway;
+let vertYellowHall;
 let red3Door;
 let redHall;
 let yellowRoom;
 let swCornerYellow;
 let nwCornerBlue;
 let redCastleLocked;
+let caveUnlocked;
 let redCastleUnlocked;
 let blackCastleLocked;
 let blackCastleUnlocked;
+let caveEntrance;
 let redInside;
+let chestHall;
 //.....................................................//
 let swordRight;
 let swordLeft;
+let theLantern;
 let theCoin;
 let squareKey;
 let roundKey;
 let greenDragonRight;
 let greenDragonLeft;
+let blueDragonRight;
+let blueDragonLeft;
 //.....................................................//
 let room1_5;
 let room1_4;
@@ -38,16 +45,24 @@ let room4Locked;
 let room4Unlocked;
 let room2;
 let room1_6;
+let room1_7Locked;
+let room1_7Unlocked;
 let room2_6;
 let room5Locked;
 let redInterior;
+let room2_3Locked;
+let room2_3Unlocked;
 let room2_4;
 let room2_5;
 let room2_7;
 //.....................................................//
 let grid;
 let inventory;
+let lockedRoom;
+let lootItem;
 let worldRooms;
+let unlockedRooms;
+let unlockedBackgrounds;
 let worldBackrounds;
 let currentRoom;
 let worldPosX;
@@ -56,6 +71,7 @@ let inBuilding = false;
 //.....................................................//
 let character;
 let coin;
+let lantern;
 let keySquare;
 let keyRound;
 let dirsim;
@@ -80,8 +96,12 @@ function preload() {
   room1_4 = loadStrings("assets/rooms/mid-row/room-1-4.txt");
   room1_5 = loadStrings("assets/rooms/mid-row/room-1-5.txt");
   room1_6 = loadStrings("assets/rooms/mid-row/room-1-6.txt");
+  room1_7Locked = loadStrings("assets/rooms/mid-row/room-1-7-locked.txt");
+  room1_7Unlocked = loadStrings("assets/rooms/mid-row/room-1-7-unlocked.txt");
   
   //bottom//
+  room2_3Locked = loadStrings("assets/rooms/bottom-row/room-2-3-locked.txt");
+  room2_3Unlocked = loadStrings("assets/rooms/bottom-row/room-2-3-unlocked.txt");
   room2_4 = loadStrings("assets/rooms/bottom-row/room-2-4.txt");
   room2_5 = loadStrings("assets/rooms/bottom-row/room-2-5.txt");
   room2_6 = loadStrings("assets/rooms/bottom-row/room-2-6.txt");
@@ -101,44 +121,71 @@ function preload() {
   yellowInt = loadImage("assets/backgrounds/yellow/yellow-intersection.png");
   yellowHallway = loadImage("assets/backgrounds/yellow/yellow-hallway.png");
   swCornerYellow = loadImage("assets/backgrounds/yellow/yellow-corner-sw.png");
+  caveUnlocked = loadImage("assets/backgrounds/red/cave-room-unlocked.png");
   nwCornerBlue = loadImage("assets/backgrounds/blue/blue-corner-nw.png");
   red3Door = loadImage("assets/backgrounds/red/red-3-door.png");
   redHall = loadImage("assets/backgrounds/red/red-hallway.png");
+  caveEntrance = loadImage("assets/backgrounds/red/cave-room-locked.png");
+  vertYellowHall = loadImage("assets/backgrounds/yellow/ns-yellow-hallway.png");
+  chestHall = loadImage("assets/backgrounds/yellow/chest-room.png");
   yellowRoom = loadImage("assets/backgrounds/yellow/yellow-room.png");
   swordRight = loadImage("assets/items/sword/sword-right.png");
   theCoin = loadImage("assets/items/coin/the-coin.png");
   squareKey = loadImage("assets/items/keys/key-square.png");
   roundKey = loadImage("assets/items/keys/round-key.png");
   swordLeft = loadImage("assets/items/sword/sword-left.png");
+  theLantern = loadImage("assets/items//keys/lantern.png");
   greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
   greenDragonLeft = loadImage("assets/enemies/green-dragon-v2-left.png");
+  blueDragonRight = loadImage("assets/enemies/blue-dragon-right.png");
+  blueDragonLeft = loadImage("assets/enemies/blue-dragon-left.png");
 }
 
 function setup() {
   createCanvas(960, 540);
   angleMode(DEGREES);
+
+  unlockedRooms = [
+    [room0Unlocked,"#","#","#",room4Unlocked,"#","#","#","#","#","#"],
+    ["#","#","#","#","#","#","#",room1_7Unlocked,"#","#","#"],
+    ["#","#","#",room2_3Unlocked,"#","#","#","#","#","#","#"],
+  ];
+
+  unlockedBackgrounds = [
+    [blackCastleUnlocked,"#","#","#",redCastleUnlocked,"#","#","#","#","#","#"],
+    ["#","#","#","#","#","#","#",vertYellowHall,"#","#","#"],
+    ["#","#","#",caveUnlocked,"#","#","#",vertYellowHall,"#","#","#"],
+  ];
+
   worldRooms = [
     [room0Locked,"#",room2, room3, room4Locked, room5Locked,"#","#","#","#","#"],
-    ["#","#","#", room1_3, room1_4, room1_5, room1_6,"#","#","#","#"],
-    ["#","#","#","#", room2_4, room2_5, room2_6, room2_7,"#","#","#"]
+    ["#","#","#", room1_3, room1_4, room1_5, room1_6,room1_7Locked,"#","#","#"],
+    ["#","#","#",room2_3Locked, room2_4, room2_5, room2_6, room2_7,"#","#","#"]
   ];
   worldBackrounds = [
     [blackCastleLocked,"#","#",nwCornerBlue,redCastleLocked,castleLocked,"#","#","#","#","#"],
-    ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,"#","#","#","#"],
-    ["#","#","#","#",redHall,red3Door,redHall,red3Door,"#","#","#"]
+    ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,chestHall,"#","#","#"],
+    ["#","#","#",caveEntrance,redHall,red3Door,redHall,red3Door,"#","#","#"]
   ];
   worldPosX = 5;
   worldPosY = 0;
   character = new Player(width/2,height/2);
   dirsim = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, worldRooms[1][5],false,1,"none","Dirsim");
-  tergim = new Enemy(750,160,greenDragonRight,greenDragonLeft,5,worldRooms[0][3],true,1,"square-key","Tergim");
-  sword = new Weapon("sword",900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
+  tergim = new Enemy(750,160,blueDragonRight,blueDragonLeft,5,worldRooms[0][3],true,2,"square-key","Tergim");
+  sword = new Weapon("sword",900,500,swordRight,swordLeft,20,20,worldRooms[0][5],"none");
   coin = new Item("coin",100,450,theCoin,13,13,worldRooms[1][6],false);
   keySquare = new Item("square-key",100,100,squareKey,21,7,worldRooms[2][6],false);
   keyRound = new Item("round-key",100,100,roundKey,21,7,redInterior,true);
+  lantern = new Item("lantern",80,120,theLantern,13,13,room1_7Unlocked,false);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
+  lockedRoom = new Map();
+  lootItem = new Map();
+  lootItem.set(room1_7Unlocked,lantern);
+  lockedRoom.set(worldRooms[2][3],lantern.id);
+  lockedRoom.set(worldRooms[0][4],keySquare.id);
+  lockedRoom.set(worldRooms[1][7],keyRound.id);
   inventory.set("discard","none");
 }
 
@@ -151,6 +198,9 @@ function draw() {
   coin.display();
   keySquare.display();
   keyRound.display();
+  if (worldRooms[1][7] === unlockedRooms[1][7]) {
+    lantern.display();
+  }
   dirsim.spawn();
   tergim.spawn();
   dirsim.flee();
@@ -241,7 +291,6 @@ class Player {
             return inventory;
           }
         }
-
       }
     }
     if (keyIsDown(69)) {
@@ -319,11 +368,16 @@ class Player {
 
   unlock() {
     if (inventory.has("holding")) {
-      if (inventory.get("holding") === keySquare.id) {
-        if (grid === worldRooms[0][4]) {
-          if (grid[this.posY-1][this.posX] === "G") {
-            worldRooms[0][4] = room4Unlocked;
-            worldBackrounds[0][4] = redCastleUnlocked;
+      if (inventory.get("holding") === lockedRoom.get(grid)) {
+        if (grid[this.posY-1][this.posX] === "G" || grid[this.posY+1][this.posX] === "G" || grid[this.posY][this.posX-1] === "G" || grid[this.posY][this.posX+1] === "G") {
+          worldBackrounds[worldPosY][worldPosX] = unlockedBackgrounds[worldPosY][worldPosX];
+          worldRooms[worldPosY][worldPosX] = unlockedRooms[worldPosY][worldPosX];
+          for (let i=1; i<4; i++) {
+            if (inventory.get(i) === inventory.get("holding")) {
+              inventory.delete(i);
+              inventory.delete("holding");
+              return inventory;
+            }
           }
         }
       }
@@ -545,7 +599,7 @@ function updateWorld() {
 
 
 class Weapon {
-  constructor(id, x, y, imageRight, imageLeft, sideX, sideY, room) {
+  constructor(id, x, y, imageRight, imageLeft, sideX, sideY, room, previous) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -556,8 +610,8 @@ class Weapon {
     this.onGround = true;
     this.room = room;
     this.lastRoom;
+    this.previous = previous;
   }
-
   display() {
     if (this.onGround) {
       if (grid === this.room) {
@@ -612,6 +666,12 @@ class Weapon {
         if (i >= this.y && i <this.y+this.sideY ) {
           if (j >= this.x && j < this.x+this.sideX) {
             for (let k=1; k<4; k++) {
+              if (inventory.has(k) && inventory.get(k) === this.previous) {
+                inventory.set(k,this.id);
+                if (inventory.get(1) === this.id) {
+                  inventory.set("holding", this.id);
+                }
+              }
               if (inventory.has(k) === false) {
                 this.onGround = false;
                 inventory.set(k,this.id);
