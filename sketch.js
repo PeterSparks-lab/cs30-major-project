@@ -8,9 +8,14 @@ let castle;
 let currentBackground;
 let castleLocked;
 let yellowInt;
+let back1_0;
 let yellowHallway;
 let vertYellowHall;
 let red3Door;
+let back2_0;
+let back1_1;
+let back1_2;
+let dark3Door;
 let redHall;
 let yellowRoom;
 let swCornerYellow;
@@ -37,6 +42,9 @@ let blueDragonLeft;
 //.....................................................//
 let room1_5;
 let room1_4;
+let room1_0;
+let room1_1;
+let room1_2;
 let room1_3;
 let room0Locked;
 let room0Unlocked;
@@ -50,6 +58,9 @@ let room1_7Unlocked;
 let room2_6;
 let room5Locked;
 let redInterior;
+let room2_0;
+let room2_1;
+let room2_2;
 let room2_3Locked;
 let room2_3Unlocked;
 let room2_4;
@@ -90,8 +101,9 @@ function preload() {
   room5Locked = loadStrings("assets/rooms/top-row/room5-locked.txt");
 
   //mid//
-
-
+  room1_0 = loadStrings("assets/rooms/mid-row/room-1-0.txt");
+  room1_1 = loadStrings("assets/rooms/mid-row/room-1-1.txt");
+  room1_2 = loadStrings("assets/rooms/mid-row/room-1-2.txt");
   room1_3 = loadStrings("assets/rooms/mid-row/room-1-3.txt");
   room1_4 = loadStrings("assets/rooms/mid-row/room-1-4.txt");
   room1_5 = loadStrings("assets/rooms/mid-row/room-1-5.txt");
@@ -100,6 +112,9 @@ function preload() {
   room1_7Unlocked = loadStrings("assets/rooms/mid-row/room-1-7-unlocked.txt");
   
   //bottom//
+  room2_0 = loadStrings("assets/rooms/bottom-row/room-2-0.txt");
+  room2_1 = loadStrings("assets/rooms/bottom-row/room-2-1.txt");
+  room2_2 = loadStrings("assets/rooms/bottom-row/room-2-2.txt");
   room2_3Locked = loadStrings("assets/rooms/bottom-row/room-2-3-locked.txt");
   room2_3Unlocked = loadStrings("assets/rooms/bottom-row/room-2-3-unlocked.txt");
   room2_4 = loadStrings("assets/rooms/bottom-row/room-2-4.txt");
@@ -112,6 +127,11 @@ function preload() {
 
 
   //load backgrounds from assets folder//
+  back1_0 = loadImage("assets/backgrounds/yellow/background-1-0.png");
+  back1_1 = loadImage("assets/backgrounds/yellow/background-1-1.png");
+  back1_2 = loadImage("assets/backgrounds/yellow/background-1-2.png");
+  back2_0 = loadImage("assets/backgrounds/red/background-2-0.png");
+  dark3Door = loadImage("assets/backgrounds/red/3-door-dark.png");
   redInside = loadImage("assets/backgrounds/castle/red-castle-inside.png");
   redCastleLocked = loadImage("assets/backgrounds/castle/red-castle-locked.png");
   redCastleUnlocked = loadImage("assets/backgrounds/castle/unlocked-red-castle.png");
@@ -159,13 +179,13 @@ function setup() {
 
   worldRooms = [
     [room0Locked,"#",room2, room3, room4Locked, room5Locked,"#","#","#","#","#"],
-    ["#","#","#", room1_3, room1_4, room1_5, room1_6,room1_7Locked,"#","#","#"],
-    ["#","#","#",room2_3Locked, room2_4, room2_5, room2_6, room2_7,"#","#","#"]
+    [room1_0,room1_1,room1_2, room1_3, room1_4, room1_5, room1_6,room1_7Locked,"#","#","#"],
+    [room2_0,room2_1,room2_2,room2_3Locked, room2_4, room2_5, room2_6, room2_7,"#","#","#"]
   ];
   worldBackrounds = [
     [blackCastleLocked,"#","#",nwCornerBlue,redCastleLocked,castleLocked,"#","#","#","#","#"],
-    ["#","#","#",swCornerYellow,yellowHallway,yellowInt,yellowRoom,chestHall,"#","#","#"],
-    ["#","#","#",caveEntrance,redHall,red3Door,redHall,red3Door,"#","#","#"]
+    [back1_0,back1_1,back1_2,swCornerYellow,yellowHallway,yellowInt,yellowRoom,chestHall,"#","#","#"],
+    [back2_0,dark3Door,dark3Door,caveEntrance,redHall,red3Door,redHall,red3Door,"#","#","#"]
   ];
   worldPosX = 5;
   worldPosY = 0;
