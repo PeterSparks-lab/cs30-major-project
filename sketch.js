@@ -31,6 +31,8 @@ let chestHall;
 //.....................................................//
 let swordRight;
 let swordLeft;
+let sword2Left;
+let sword2Right;
 let theLantern;
 let theCoin;
 let squareKey;
@@ -88,6 +90,7 @@ let keyRound;
 let dirsim;
 let tergim;
 let sword;
+let sword2;
 
 function preload() {
   //load rooms from text files//
@@ -149,11 +152,12 @@ function preload() {
   vertYellowHall = loadImage("assets/backgrounds/yellow/ns-yellow-hallway.png");
   chestHall = loadImage("assets/backgrounds/yellow/chest-room.png");
   yellowRoom = loadImage("assets/backgrounds/yellow/yellow-room.png");
-  swordRight = loadImage("assets/items/sword/sword-right.png");
+  swordRight = loadImage("assets/items/sword/sword1/sword-right.png");
   theCoin = loadImage("assets/items/coin/the-coin.png");
   squareKey = loadImage("assets/items/keys/key-square.png");
   roundKey = loadImage("assets/items/keys/round-key.png");
-  swordLeft = loadImage("assets/items/sword/sword-left.png");
+  swordLeft = loadImage("assets/items/sword/sword1/sword-left.png");
+  sword2Left = loadImage("assets/items/sword/sword2/sword2-left.png");
   theLantern = loadImage("assets/items//keys/lantern.png");
   greenDragonRight = loadImage("assets/enemies/green-dragon-v2.png");
   greenDragonLeft = loadImage("assets/enemies/green-dragon-v2-left.png");
@@ -192,11 +196,11 @@ function setup() {
   character = new Player(width/2,height/2);
   dirsim = new Enemy(160, 210, greenDragonRight, greenDragonLeft, 5, worldRooms[1][5],false,1,"none","Dirsim");
   tergim = new Enemy(750,160,blueDragonRight,blueDragonLeft,5,worldRooms[0][3],true,2,"square-key","Tergim");
-  sword = new Weapon("sword",900,500,swordRight,swordLeft,20,20,worldRooms[0][5],"none");
-  coin = new Item("coin",100,450,theCoin,13,13,worldRooms[1][6],false);
-  keySquare = new Item("square-key",100,100,squareKey,21,7,worldRooms[2][6],false);
-  keyRound = new Item("round-key",100,100,roundKey,21,7,redInterior,true);
-  lantern = new Item("lantern",80,120,theLantern,13,13,room1_7Unlocked,false);
+  sword = new Weapon("sword","weapon",1,900,500,swordRight,swordLeft,20,20,worldRooms[0][5]);
+  coin = new Item("coin","coin",100,450,theCoin,13,13,worldRooms[1][6],false);
+  keySquare = new Item("square-key","key",100,100,squareKey,21,7,worldRooms[2][6],false);
+  keyRound = new Item("round-key","key",100,100,roundKey,21,7,redInterior,true);
+  lantern = new Item("lantern","key",80,120,theLantern,13,13,room1_7Unlocked,false);
   castle = castleLocked;
   currentBackground = castle;
   inventory = new Map();
@@ -229,8 +233,8 @@ function draw() {
   tergim.move();
   dirsim.display();
   tergim.display();
-  dirsim.killPlayer();
-  tergim.killPlayer();
+  dirsim.killOrDie();
+  tergim.killOrDie();
   character.position();
   character.inputHandler();
   sword.display();
@@ -511,12 +515,17 @@ class Enemy {
     }
   }
 
-  killPlayer() {
+  killOrDie() {
     if (this.alive) {
       if (character.x+10 > this.x && character.x < this.x +64 && character.y > this.y && character.y < this.y + 64) {
-        if (inventory.get("holding") === "sword") {
-          this.hasBeenKilled = true;
-          console.log(this.name + " has been slain");
+        if (inventory.get("holding").type === "weapon") {
+          if (inventory.get("holding").tier >= this.tier) {
+            this.hasBeenKilled = true;
+            console.log(this.name + " has been slain");
+          }
+          else {
+            character.death();
+          }
         }
         else {
           character.death();
@@ -527,8 +536,9 @@ class Enemy {
 }
 
 class Item {
-  constructor(id, x, y, image, sideX, sideY, room, onStart) {
+  constructor(id, type, x, y, image, sideX, sideY, room, onStart) {
     this.id = id;
+    this.type = type;
     this.x = x;
     this.y = y;
     this.image = image;
@@ -619,8 +629,10 @@ function updateWorld() {
 
 
 class Weapon {
-  constructor(id, x, y, imageRight, imageLeft, sideX, sideY, room, previous) {
+  constructor(id, type, tier, x, y, imageRight, imageLeft, sideX, sideY, room) {
     this.id = id;
+    this.type = type;
+    this.tier = tier;
     this.x = x;
     this.y = y;
     this.imageRight = imageRight;
@@ -630,7 +642,6 @@ class Weapon {
     this.onGround = true;
     this.room = room;
     this.lastRoom;
-    this.previous = previous;
   }
   display() {
     if (this.onGround) {
@@ -686,12 +697,6 @@ class Weapon {
         if (i >= this.y && i <this.y+this.sideY ) {
           if (j >= this.x && j < this.x+this.sideX) {
             for (let k=1; k<4; k++) {
-              if (inventory.has(k) && inventory.get(k) === this.previous) {
-                inventory.set(k,this.id);
-                if (inventory.get(1) === this.id) {
-                  inventory.set("holding", this.id);
-                }
-              }
               if (inventory.has(k) === false) {
                 this.onGround = false;
                 inventory.set(k,this.id);
