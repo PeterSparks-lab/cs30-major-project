@@ -1,9 +1,7 @@
 // Major Project
 // Peter Sparks
-// Oct 18 2021
-//
-// Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// Nov 5 2021
+
 //Declare Global Variables.....................................................//
 ///State..............................................................///
 let playGame;
@@ -409,11 +407,6 @@ function draw() {
     darkSword.display();
     lightSword.display();
     keyFinal.display();
-    if (playing === false) {
-      music.play();
-      music.loop();
-      playing = true;
-    }
   }
   else {
     background("black");
@@ -423,7 +416,7 @@ function draw() {
   }
 }
 
-
+//Player class//
 class Player {
   constructor(x, y) {
     this.x = x;
@@ -434,19 +427,28 @@ class Player {
     this.posY = this.y/10;
     this.leftOrRight;
   }
-
+  //displays player//
   display() {
     noStroke();
     fill("blue");
     rect(this.x, this.y, this.size, this.size);
   }
 
+  //determines position in the grid//
   position() {
     this.posX = Math.floor(this.x/10);
     this.posY = Math.floor(this.y/10);
   }
-
+  
+  //take user input
   inputHandler() {
+    if (keyIsPressed) {
+      if (playing === false) {
+        music.play();
+        music.loop();
+        playing = true;
+      }
+    }
     if (keyIsDown(87)) {
       if (grid[this.posY-1][this.posX] === ".") {
         this.y -= this.speed;
@@ -505,19 +507,12 @@ class Player {
     }
   }
 
+  //change which room in the game world the player is in//
   rooms() {
     if (grid === room4Unlocked && this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
       inBuilding = true;
       this.x = 520;
       grid = redInterior;
-      // if (this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
-      // }
-      // else if (this.x === 0) {
-      //   this.x = 940;
-      //   if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
-      //     worldPosX -= 1;
-      //   }
-      // }
     }
     else if (grid === room0Unlocked && this.posX >= 46 && this.posX <= 49 && this.posY <= 27 && this.posY >= 24) {
       inBuilding = true;
@@ -580,7 +575,7 @@ class Player {
           worldPosY -= 1;
         }
       }
-      if (this.x >= 940) {
+      if (this.x >= 950) {
         this.x = 20;
         if (worldRooms[worldPosY][worldPosX + 1] !== "#") {
           worldPosX += 1;
@@ -596,6 +591,8 @@ class Player {
     }
   }
 
+
+  //unlocks rooms//
   unlock() {
     if (inventory.has("holding")) {
       if (inventory.get("holding") === lockedRoom.get(grid)) {
@@ -617,6 +614,7 @@ class Player {
     }
   }
 
+  //kills player//
   death() {
     console.log("you are dead");
     this.alive = false;
@@ -641,6 +639,7 @@ class Enemy {
     this.name = name;
   }
 
+  //calls functions//
   exist() {
     this.spawn();
     this.display();
@@ -648,7 +647,8 @@ class Enemy {
     this.flee();
     this.killOrDie();
   }
-
+  
+  //spawns the enemy//
   spawn() {
     if (!this.hasBeenKilled) {
       if (grid === this.spawnRoom) {
@@ -664,6 +664,7 @@ class Enemy {
     
   }
 
+  //displays the enemy//
   display() {
     if (this.alive) {
       if (this.fleeing) {
@@ -685,6 +686,7 @@ class Enemy {
     }
   }
 
+  //moves the enemy//
   move() {
     if (this.alive) {
       if (this.fleeing) {
@@ -722,6 +724,7 @@ class Enemy {
     }
   }
 
+  //enemies will flee if frightened//
   flee() {
     if (this.willflee) {
       if (inventory.has("holding")) {
@@ -735,6 +738,7 @@ class Enemy {
     }
   }
 
+  //either the enemy or the player dies
   killOrDie() {
     if (this.alive) {
       if (character.x+10 > this.x && character.x < this.x +64 && character.y > this.y - 5 && character.y < this.y + 64) {
@@ -775,13 +779,15 @@ class Boss {
     this.killed = false;
   }
 
+  // calls functions//
   exist() {
     this.spawn();
     this.display();
     this.move();
     this.killOrDie();
   }
-
+  
+  //spawns the boss
   spawn() {
     if (!this.killed) {
       if (grid === worldRooms[this.roomY][this.roomX]) {
@@ -799,6 +805,7 @@ class Boss {
     
   }
 
+  //displays the boss//
   display() {
     if (this.alive) {
       if (this.fleeing) {
@@ -820,6 +827,7 @@ class Boss {
     }
   }
 
+  //moves the boss//
   move() {
     if (this.alive) {
       if (this.y > 40 && this.y+64 < height-40 && this.x > 40 && this.x+64 < width-40) {
@@ -839,6 +847,8 @@ class Boss {
     }
   }
 
+
+  //either the boss or the player dies//
   killOrDie() {
     if (this.alive) {
       if (character.x+10 > this.x && character.x < this.x +64 && character.y > this.y - 5 && character.y < this.y + 64) {
@@ -880,6 +890,7 @@ class Item {
     this.used = used;
   }
   
+  //displays the item//
   display() {
     if (this.used === false) {
       if (this.onGround) {
@@ -934,6 +945,7 @@ class Item {
     }
   }
 
+  //if there is space in the inventory the item is picked up//
   pickup() {
     if (this.used === false) {
       for(let i=character.y; i<character.y+10; i++) {
@@ -958,6 +970,7 @@ class Item {
   }
 }
 
+//updates the grid and the background//
 function updateWorld() {
   if (inBuilding === false) {
     grid = worldRooms[worldPosY][worldPosX];
@@ -968,7 +981,7 @@ function updateWorld() {
   }
 }
 
-
+//unlocks all the rooms//
 function cheatUnlock() {
   for (let y=0; y<3; y++) {
     for (let x=0; x<11; x++) {
@@ -981,6 +994,7 @@ function cheatUnlock() {
   }
 }
 
+//teleports the player between rooms//
 function warp(y,x) {
   if (x >=0 && x<= 10 && y >= 0 && y <= 2) {
     worldPosX = x;
