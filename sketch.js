@@ -4,6 +4,11 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
+//Declare Global Variables.....................................................//
+///State..............................................................///
+let playGame;
+///...................................................................///
+///Backgrounds........................................................///
 let castle;
 let currentBackground;
 let yellowCastleLocked;
@@ -35,6 +40,9 @@ let castleUnlocked;
 let blackCastleLocked;
 let blackCastleUnlocked;
 let caveEntrance;
+let blackInside;
+let yellowInside;
+let castleInside;
 let redInside;
 let back7;
 let chestHall;
@@ -44,7 +52,8 @@ let back9;
 let back_10Locked;
 let back_10Unlocked;
 let back2_9;
-//.....................................................//
+///...................................................................///
+///Item and Enemy sprites.............................................///
 let swordRight;
 let swordLeft;
 let sword2Left;
@@ -58,6 +67,7 @@ let theCoin;
 let squareKey;
 let roundKey;
 let triangleKey;
+let finalKey;
 let greenDragonRight;
 let greenDragonLeft;
 let blueDragonRight;
@@ -66,33 +76,42 @@ let whiteDragonRight;
 let whiteDragonLeft;
 let blackDragonRight;
 let blackDragonLeft;
-//.....................................................//
-let room1_5;
-let room1_4;
+///...................................................................///
+///Rooms..............................................................///
+////Top Row.........////
+let room0Locked;
+let room0Unlocked;
+let room1Locked;
+let room1Unlocked;
+let room2;
+let room3;
+let room4Locked;
+let room4Unlocked;
+let room5Locked;
+let room5Unlocked;
+let room6Locked;
+let room6Unlocked;
+let room7;
+let room8;
+let room9;
+let room10Locked;
+let room10Unlocked;
+////................////
+////Middle Row......////
 let room1_0;
 let room1_1;
 let room1_2;
 let room1_3;
-let room1_10;
-let room1_9;
-let room0Locked;
-let room0Unlocked;
-let room6Locked;
-let room6Unlocked;
-let room1_8;
-let room3;
-let room4Locked;
-let room4Unlocked;
-let room2;
+let room1_4;
+let room1_5;
 let room1_6;
 let room1_7Locked;
 let room1_7Unlocked;
-let room1Unlocked;
-let room1Locked;
-let room2_6;
-let room5Locked;
-let redInterior;
-let room5Unlocked;
+let room1_8;
+let room1_9;
+let room1_10;
+////................////
+////Bottom Row......////
 let room2_0;
 let room2_1;
 let room2_2;
@@ -100,28 +119,33 @@ let room2_3Locked;
 let room2_3Unlocked;
 let room2_4;
 let room2_5;
+let room2_6;
 let room2_7;
-let room7;
-let room2_10;
 let room2_8;
 let room2_9;
-let room8;
-let room9;
-let room10Locked;
-let room10Unlocked;
-let blackInside;
+let room2_10;
+////................////
+////Interiors.......////
+let redInterior;
 let blackInterior;
-let yellowInside;
 let yellowInterior;
-let castleInside;
 let castleInterior;
-let finalKey;
-//.....................................................//
-let grid;
+////................////
+///...................................................................///
+
+
+///Music..............................................................///
+let music;
+let playing = false;
+///...................................................................///
+///Declare Maps.......................................................///
 let inventory;
 let intBackgrounds;
 let lockedRoom;
 let lootItem;
+///...................................................................///
+///Important Stuff(Arrays&s=Such).....................................///
+let grid;
 let worldRooms;
 let unlockedRooms;
 let unlockedBackgrounds;
@@ -130,15 +154,23 @@ let currentRoom;
 let worldPosX;
 let worldPosY;
 let inBuilding = false;
-let playing = false;
-//.....................................................//
+///...................................................................///
+///Declare Objects....................................................///
+////Player..........////
 let character;
+////................////
+////Coin............////
 let coin;
+////................////
+////Keys............////
 let lantern;
 let keySquare;
 let keyRound;
 let keyDark;
 let keyTriangle;
+let keyFinal;
+////................////
+////Dragons.........////
 let dirsim;
 let tergim;
 let datheg;
@@ -146,17 +178,20 @@ let kezyg;
 let gusar;
 let ygir;
 let andisdud;
+////................////
+////Swords..........////
 let basicSword;
 let sturdySword;
 let darkSword;
 let lightSword;
-let keyFinal;
-let music;
+////................////
+///...................................................................///
+//...........................................................................//
 
 function preload() {
   //Music//
   music = loadSound("assets/music/BeepBox-Song (1).wav");
-  //
+  //.....//
 
   //load rooms from text files//
   //top//
@@ -213,7 +248,7 @@ function preload() {
   yellowInterior = loadStrings("assets/rooms/interiors/yellow-interior.txt");
   castleInterior = loadStrings("assets/rooms/interiors/castle-interior.txt");
 
-  //load backgrounds from assets folder//
+  //load backgrounds and sprites from assets folder//
   yellowInside = loadImage("assets/backgrounds/castle/yellow-inside.png");
   blackInside = loadImage("assets/backgrounds/castle/black-inside.png");
   back1_0 = loadImage("assets/backgrounds/yellow/background-1-0.png");
@@ -281,9 +316,10 @@ function preload() {
 function setup() {
   createCanvas(960, 540);
   angleMode(DEGREES);
+  playGame = true;
 
   unlockedRooms = [
-    [room0Unlocked,room1Unlocked,"#","#",room4Unlocked,room5Unlocked,room4Unlocked,"#","#","#",room10Unlocked],
+    [room0Unlocked,room1Unlocked,"#","#",room4Unlocked,room5Unlocked,room6Unlocked,"#","#","#",room10Unlocked],
     ["#","#","#","#","#","#","#",room1_7Unlocked,"#","#","#"],
     ["#","#","#",room2_3Unlocked,"#","#","#","#","#","#","#"],
   ];
@@ -348,34 +384,42 @@ function setup() {
 }
 
 function draw() {
-  updateWorld();
-  background(currentBackground);
-  character.rooms();
-  character.display();
-  coin.display();
-  keySquare.display();
-  keyRound.display();
-  keyDark.display();
-  keyTriangle.display();
-  lantern.display();
-  dirsim.exist();
-  tergim.exist();
-  kezyg.exist();
-  datheg.exist();
-  gusar.exist();
-  ygir.exist();
-  andisdud.exist();
-  character.position();
-  character.inputHandler();
-  basicSword.display();
-  sturdySword.display();
-  darkSword.display();
-  lightSword.display();
-  keyFinal.display();
-  if (playing === false) {
-    music.play();
-    music.loop();
-    playing = true;
+  if (playGame) {
+    updateWorld();
+    background(currentBackground);
+    character.rooms();
+    character.display();
+    coin.display();
+    keySquare.display();
+    keyRound.display();
+    keyDark.display();
+    keyTriangle.display();
+    lantern.display();
+    dirsim.exist();
+    tergim.exist();
+    kezyg.exist();
+    datheg.exist();
+    gusar.exist();
+    ygir.exist();
+    andisdud.exist();
+    character.position();
+    character.inputHandler();
+    basicSword.display();
+    sturdySword.display();
+    darkSword.display();
+    lightSword.display();
+    keyFinal.display();
+    if (playing === false) {
+      music.play();
+      music.loop();
+      playing = true;
+    }
+  }
+  else {
+    background("black");
+    fill("red");
+    textSize(20);
+    text("You Died",480,270);
   }
 }
 
@@ -462,32 +506,28 @@ class Player {
   }
 
   rooms() {
-    if (grid === room4Unlocked) {
-      if (this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
-        inBuilding = true;
-        this.x = 520;
-        grid = redInterior;
-      }
-      else if (this.x === 0) {
-        this.x = 940;
-        if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
-          worldPosX -= 1;
-        }
-      }
+    if (grid === room4Unlocked && this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
+      inBuilding = true;
+      this.x = 520;
+      grid = redInterior;
+      // if (this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
+      // }
+      // else if (this.x === 0) {
+      //   this.x = 940;
+      //   if (worldRooms[worldPosY][worldPosX - 1] !== "#") {
+      //     worldPosX -= 1;
+      //   }
+      // }
     }
-    else if (grid === room0Unlocked) {
-      if (this.posX >= 46 && this.posX <= 49 && this.posY <= 27 && this.posY >= 24) {
-        inBuilding = true;
-        this.x = 520;
-        grid = blackInterior;
-      }
+    else if (grid === room0Unlocked && this.posX >= 46 && this.posX <= 49 && this.posY <= 27 && this.posY >= 24) {
+      inBuilding = true;
+      this.x = 520;
+      grid = blackInterior;
     }
-    else if (grid === room6Unlocked) {
-      if (this.posX >= 46 && this.posX <= 49 && this.posY <= 27 && this.posY >= 24) {
-        inBuilding = true;
-        this.x = 520;
-        grid = yellowInterior;
-      }
+    else if (grid === room6Unlocked && this.posX >= 46 && this.posX <= 49 && this.posY <= 27 && this.posY >= 24) {
+      inBuilding = true;
+      this.x = 520;
+      grid = yellowInterior;
     }
     else if (grid === redInterior) {
       if (this.y >520) {
@@ -513,12 +553,10 @@ class Player {
         this.y = 290;
       }
     }
-    else if (grid === room5Unlocked) {
-      if (this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
-        inBuilding = true;
-        this.x = 520;
-        grid = castleInterior;
-      }
+    else if (grid === room5Unlocked && this.posX >= 46 && this.posX <= 51 && this.posY === 14) {
+      inBuilding = true;
+      this.x = 520;
+      grid = castleInterior;
     }
     else if (grid === castleInterior) {
       text("YOU WIN!",480,270);
@@ -582,6 +620,7 @@ class Player {
   death() {
     console.log("you are dead");
     this.alive = false;
+    playGame = false;
   }
 }
 
@@ -712,6 +751,9 @@ class Enemy {
           else {
             character.death();
           }
+        }
+        else {
+          character.death();
         }
       }
     }
